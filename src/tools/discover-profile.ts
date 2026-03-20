@@ -107,9 +107,11 @@ async function fetchXProfile(handle: string): Promise<XProfile> {
 export const discoverProfileSchema = z.object({
   x_handle: z
     .string()
+    .regex(/^@?[a-zA-Z0-9_]{1,15}$/, "Invalid X handle")
     .describe("Your X (Twitter) handle, e.g. efecanbasoz or @efecanbasoz"),
   github_username: z
     .string()
+    .regex(/^[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,37}[a-zA-Z0-9])?$/, "Invalid GitHub username")
     .optional()
     .describe("Your GitHub username, e.g. efecanbasoz (optional but recommended)"),
   x_bio_override: z

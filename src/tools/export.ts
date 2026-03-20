@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { writeFileSync } from "fs";
-import { join } from "path";
+import { join, resolve } from "path";
 import { loadState, STATE_DIR } from "../state.js";
 import { ok, err } from "../types.js";
 import type { CalendarEntry } from "../types.js";
@@ -95,7 +95,7 @@ export async function exportTool(input: ExportInput) {
     }
 
     const filename = `calendar.${input.format}`;
-    const outputPath = input.output_path ?? join(STATE_DIR, filename);
+    const outputPath = resolve(input.output_path ?? join(STATE_DIR, filename));
     writeFileSync(outputPath, content, "utf-8");
 
     return ok(
