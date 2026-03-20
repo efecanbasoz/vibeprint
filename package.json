@@ -1,0 +1,30 @@
+{
+  "name": "vibeprint",
+  "version": "0.1.0",
+  "description": "MCP server that discovers your developer profile and generates a personal brand roadmap, content topics, and tweet copy.",
+  "keywords": ["mcp", "personal-brand", "twitter", "github", "content-calendar", "X", "vibe-code", "claude-code", "codex", "cli"],
+  "author": "Efecan Basoz <efecan@sirkhet.com>",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/index.js",
+  "bin": {
+    "vibeprint": "dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
