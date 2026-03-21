@@ -54,7 +54,6 @@ function toMarkdown(entries: CalendarEntry[]): string {
   return lines.join("\n");
 }
 
-// SEC-004: Sanitize CSV fields to prevent formula injection
 function csvSafe(value: string): string {
   const escaped = value.replace(/"/g, '""');
   // Prefix formula-capable characters with a single quote
@@ -103,7 +102,6 @@ export async function exportTool(input: ExportInput) {
     }
 
     const filename = `calendar.${input.format}`;
-    // SEC-001: Confine exports to STATE_DIR to prevent arbitrary file overwrites
     const defaultPath = join(STATE_DIR, filename);
     const outputPath = resolve(input.output_path ?? defaultPath);
     const realBase = resolve(STATE_DIR);
