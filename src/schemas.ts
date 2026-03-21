@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-// SEC-002 + SEC-006 + QA-001/003: Runtime Zod schemas for all persisted data.
 // Validates LLM output before writing to state, and state on load.
 
 const tweetFormatSchema = z.enum(["thread", "single", "quote_tweet", "media"]);
