@@ -2,7 +2,7 @@ import { z } from "zod";
 import { loadState, updateState } from "../state.js";
 import { buildCalendarPrompt } from "../prompts.js";
 import { ok, err } from "../types.js";
-import type { CalendarEntry } from "../types.js";
+import { calendarEntrySchema, stripFence } from "../schemas.js";
 
 export const generateCalendarSchema = z.object({
   week_count: z
@@ -47,8 +47,14 @@ export const saveCalendarSchema = z.object({
 
 export async function saveCalendarTool(input: { json: string }) {
   try {
-    const raw = input.json.trim().replace(/^```json\n?/, "").replace(/\n?```$/, "");
-    const entries = JSON.parse(raw) as CalendarEntry[];
+    const raw = stripFence(input.json);
+    const parsed = JSON.parse(raw);
+    // SEC-002: Validate LLM output with Zod before persisting
+    const result = z.array(calendarEntrySchema).safeParse(parsed);
+    if (!result.success) {
+      return err(`Invalid calendar structure: ${result.error.issues.map(i => i.message).join(', ')}`);
+    }
+    const entries = result.data;
     updateState({ calendar: entries });
 
     const preview = entries

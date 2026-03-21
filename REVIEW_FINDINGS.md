@@ -8,29 +8,37 @@
 
 | Severity | Count | Fixed |
 |----------|-------|-------|
-| HIGH | 5 | 2 |
-| MEDIUM | 10 | 5 |
+| HIGH | 5 | 5 |
+| MEDIUM | 10 | 8 |
 | LOW | 2 | 1 |
 | INFO | 2 | 0 |
-| **Total** | **19** | **8** |
+| **Total** | **19** | **14** |
 
-## Fixed
+## Fixed (Round 1)
 
-- **SEC-001 (HIGH)**: Export path now confined to ~/.vibeprint/ directory
-- **SEC-004 (MEDIUM)**: CSV formula injection protection (prefix leading =+-@)
+- **SEC-001 (HIGH)**: Export path confined to ~/.vibeprint/
+- **SEC-004 (MEDIUM)**: CSV formula injection protection
 - **SEC-005 (MEDIUM)**: State directory 0o700, state file 0o600
 - **SEC-008 (LOW)**: Generic error messages, server-side logging
-- **QA-007 (MEDIUM)**: State dir/file restrictive permissions
-- **QA-008 (MEDIUM)**: Input size limits on save_roadmap, save_topics, save_calendar (500k max)
-- **QA-009 (MEDIUM)**: All CSV fields now use csvSafe() escaping
+- **QA-008 (MEDIUM)**: Input size limits (500k max)
+- **QA-009 (MEDIUM)**: CSV fields use csvSafe() escaping
 
-## Documented (require larger changes)
+## Fixed (Round 2 — Deferred)
 
-- **SEC-002 (HIGH)**: LLM JSON not validated with Zod before persistence
-- **SEC-003 (MEDIUM)**: Prompt injection via untrusted profile data
-- **SEC-006 (MEDIUM)**: State loaded without schema validation
-- **SEC-007 (MEDIUM)**: MCP tool annotations missing
-- **QA-001-006, QA-010-011**: Type safety, error handling, testing gaps
+- **SEC-002 (HIGH)**: All save_* tools now validate LLM JSON with Zod schemas before
+  persisting. Added roadmapSchema, contentTopicSchema, calendarEntrySchema with field
+  type checks, size limits, and enum validation. Invalid LLM output is rejected.
+- **SEC-003 (MEDIUM)**: Profile data serialized as JSON with sanitized fields and
+  labeled as untrusted in prompts to mitigate indirect prompt injection.
+- **SEC-006 (MEDIUM)**: State loaded with vibeprintStateSchema.safeParse(). Corrupted
+  state quarantined to state.json.corrupt instead of silently resetting.
+- **QA-001/003 (HIGH)**: All type safety issues resolved via Zod validation on both
+  load and save paths. No more blind `as` casts on LLM output.
+
+## Remaining
+
+- **SEC-007 (MEDIUM)**: MCP tool annotations (registerTool API migration)
+- **QA-004-006, QA-010-011**: Error handling, performance, testing
 
 ## Positive Findings
 

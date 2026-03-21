@@ -1,7 +1,8 @@
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from "fs";
+import { readFileSync, writeFileSync, mkdirSync, existsSync, renameSync } from "fs";
 import { homedir } from "os";
 import { join } from "path";
 import type { VibeprintState } from "./types.js";
+import { vibeprintStateSchema } from "./schemas.js";
 
 const STATE_DIR = join(homedir(), ".vibeprint");
 const STATE_FILE = join(STATE_DIR, "state.json");
@@ -16,18 +17,28 @@ const EMPTY_STATE: VibeprintState = {
 
 function ensureDir(): void {
   if (!existsSync(STATE_DIR)) {
-    // SEC-005: Create with restrictive permissions
     mkdirSync(STATE_DIR, { recursive: true, mode: 0o700 });
   }
 }
 
+// SEC-006 + QA-001: Validate state on load with Zod schema
 export function loadState(): VibeprintState {
   ensureDir();
   if (!existsSync(STATE_FILE)) return { ...EMPTY_STATE };
   try {
     const raw = readFileSync(STATE_FILE, "utf-8");
-    return JSON.parse(raw) as VibeprintState;
-  } catch {
+    const parsed = JSON.parse(raw);
+    const result = vibeprintStateSchema.safeParse(parsed);
+    if (result.success) {
+      return result.data as VibeprintState;
+    }
+    // QA-002: Quarantine corrupted state instead of silently resetting
+    console.error(`State validation failed: ${result.error.message}`);
+    const corruptPath = STATE_FILE + ".corrupt";
+    try { renameSync(STATE_FILE, corruptPath); } catch { /* ignore rename failure */ }
+    return { ...EMPTY_STATE };
+  } catch (e) {
+    console.error(`State load failed: ${e}`);
     return { ...EMPTY_STATE };
   }
 }

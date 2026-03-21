@@ -2,7 +2,7 @@ import { z } from "zod";
 import { loadState, updateState } from "../state.js";
 import { buildTopicsPrompt } from "../prompts.js";
 import { ok, err } from "../types.js";
-import type { ContentTopic } from "../types.js";
+import { contentTopicSchema, stripFence } from "../schemas.js";
 
 // ─── generate_topics ─────────────────────────────────────────────────────
 
@@ -32,10 +32,14 @@ export const saveTopicsSchema = z.object({
 
 export async function saveTopicsTool(input: { json: string }) {
   try {
-    const raw = input.json.trim().replace(/^```json\n?/, "").replace(/\n?```$/, "");
-    const topics = JSON.parse(raw) as ContentTopic[];
-    // All topics start as unapproved
-    const withStatus = topics.map((t) => ({ ...t, approved: null }));
+    const raw = stripFence(input.json);
+    const parsed = JSON.parse(raw);
+    // SEC-002: Validate LLM output with Zod before persisting
+    const result = z.array(contentTopicSchema).safeParse(parsed);
+    if (!result.success) {
+      return err(`Invalid topics structure: ${result.error.issues.map(i => i.message).join(', ')}`);
+    }
+    const withStatus = result.data.map((t) => ({ ...t, approved: null }));
     updateState({ topics: withStatus });
 
     const list = withStatus
@@ -46,7 +50,7 @@ export async function saveTopicsTool(input: { json: string }) {
       .join("\n\n");
 
     return ok(
-      `✅ ${topics.length} topics saved.\n\n${list}\n\n` +
+      `✅ ${withStatus.length} topics saved.\n\n${list}\n\n` +
         `**Next step:** Run \`approve_topics\` with the IDs you want to keep, ` +
         `e.g. \`approve_topics(ids: ["topic_01","topic_03"])\`.`
     );
