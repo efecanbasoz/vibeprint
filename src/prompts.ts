@@ -8,7 +8,7 @@ function sanitize(text: string | null | undefined, maxLen = 300): string {
   return text.replace(/[\r\n\t]/g, " ").slice(0, maxLen);
 }
 
-export function buildProfileContext(state: VibeprintState): string {
+function buildProfileContext(state: VibeprintState): string {
   const parts: string[] = [];
 
   // SEC-003: Profile data is serialized as JSON to prevent prompt injection.
