@@ -171,7 +171,6 @@ export async function discoverProfileTool(input: DiscoverProfileInput) {
         `\n\n**Next step:** Run \`set_niche\` to define your niche and audience.`
     );
   } catch (e) {
-    // SEC-008: Generic error to avoid leaking internal details
     console.error("discover_profile failed:", e);
     return err("Profile discovery failed. Check your network connection and API tokens.");
   }
