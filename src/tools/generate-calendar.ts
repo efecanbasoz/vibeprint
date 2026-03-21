@@ -18,7 +18,7 @@ export type GenerateCalendarInput = z.infer<typeof generateCalendarSchema>;
 
 export async function generateCalendarTool(input: GenerateCalendarInput) {
   try {
-    const state = loadState();
+    const state = await loadState();
 
     if (!state.roadmap) return err("No roadmap. Run `generate_roadmap` first.");
 
@@ -55,7 +55,7 @@ export async function saveCalendarTool(input: { json: string }) {
       return err(`Invalid calendar structure: ${result.error.issues.map(i => i.message).join(', ')}`);
     }
     const entries = result.data;
-    updateState({ calendar: entries });
+    await updateState({ calendar: entries });
 
     const preview = entries
       .slice(0, 5)

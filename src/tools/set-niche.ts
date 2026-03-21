@@ -29,7 +29,7 @@ export type SetNicheInput = z.infer<typeof setNicheSchema>;
 
 export async function setNicheTool(input: SetNicheInput) {
   try {
-    const state = loadState();
+    const state = await loadState();
 
     if (!state.profile) {
       return err("No profile found. Run `discover_profile` first.");
@@ -43,7 +43,7 @@ export async function setNicheTool(input: SetNicheInput) {
       setAt: new Date().toISOString(),
     };
 
-    updateState({ niche });
+    await updateState({ niche });
 
     return ok(
       `✅ Niche saved.\n\n` +

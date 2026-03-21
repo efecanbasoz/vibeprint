@@ -5,7 +5,7 @@ import { ok } from "../types.js";
 export const statusSchema = z.object({});
 
 export async function statusTool(_input: Record<string, never>) {
-  const state = loadState();
+  const state = await loadState();
   const approved = state.topics.filter((t) => t.approved === true).length;
   const total = state.topics.length;
 
@@ -58,6 +58,6 @@ export async function resetTool(input: { confirm: boolean }) {
   if (!input.confirm) {
     return ok("Reset cancelled. Pass `confirm: true` to proceed.");
   }
-  resetState();
+  await resetState();
   return ok("🗑️  State reset. All data cleared. Run `discover_profile` to start fresh.");
 }

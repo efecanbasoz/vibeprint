@@ -8,7 +8,7 @@ export const generateRoadmapSchema = z.object({});
 
 export async function generateRoadmapTool(_input: Record<string, never>) {
   try {
-    const state = loadState();
+    const state = await loadState();
 
     if (!state.profile) return err("No profile found. Run `discover_profile` first.");
     if (!state.niche) return err("No niche set. Run `set_niche` first.");
@@ -47,7 +47,7 @@ export async function saveRoadmapTool(input: SaveRoadmapInput) {
       return err(`Invalid roadmap structure: ${result.error.issues.map(i => i.message).join(', ')}`);
     }
     const roadmap = { ...result.data, generatedAt: new Date().toISOString() };
-    updateState({ roadmap });
+    await updateState({ roadmap });
 
     const pillars = roadmap.contentPillars
       .map((p) => `  • **${p.name}** (${p.weeklyFrequency}x/week) — ${p.description}`)

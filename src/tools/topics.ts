@@ -10,7 +10,7 @@ export const generateTopicsSchema = z.object({});
 
 export async function generateTopicsTool(_input: Record<string, never>) {
   try {
-    const state = loadState();
+    const state = await loadState();
     if (!state.roadmap) return err("No roadmap found. Run `generate_roadmap` first.");
 
     const prompt = buildTopicsPrompt(state);
@@ -40,7 +40,7 @@ export async function saveTopicsTool(input: { json: string }) {
       return err(`Invalid topics structure: ${result.error.issues.map(i => i.message).join(', ')}`);
     }
     const withStatus = result.data.map((t) => ({ ...t, approved: null }));
-    updateState({ topics: withStatus });
+    await updateState({ topics: withStatus });
 
     const list = withStatus
       .map(
@@ -71,7 +71,7 @@ export type ApproveTopicsInput = z.infer<typeof approveTopicsSchema>;
 
 export async function approveTopicsTool(input: ApproveTopicsInput) {
   try {
-    const state = loadState();
+    const state = await loadState();
 
     if (!state.topics.length) {
       return err("No topics found. Run `generate_topics` first.");
@@ -83,7 +83,7 @@ export async function approveTopicsTool(input: ApproveTopicsInput) {
       approved: approvedSet.has(t.id) ? true : false,
     }));
 
-    updateState({ topics: updated });
+    await updateState({ topics: updated });
 
     const approved = updated.filter((t) => t.approved);
     const rejected = updated.filter((t) => !t.approved);

@@ -145,7 +145,7 @@ export async function discoverProfileTool(input: DiscoverProfileInput) {
       discoveredAt: new Date().toISOString(),
     };
 
-    updateState({ profile });
+    await updateState({ profile });
 
     const repoSummary = githubProfile
       ? `\n\n**GitHub** — @${githubProfile.username}\n` +

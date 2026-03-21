@@ -84,7 +84,7 @@ function toCsv(entries: CalendarEntry[]): string {
 
 export async function exportTool(input: ExportInput) {
   try {
-    const state = loadState();
+    const state = await loadState();
 
     if (!state.calendar.length) {
       return err("No calendar found. Run `generate_calendar` first.");
