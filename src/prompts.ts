@@ -2,7 +2,6 @@ import type { VibeprintState } from "./types.js";
 
 // ─── Profile context block ─────────────────────────────────────────────────
 
-// SEC-003: Sanitize untrusted text to prevent indirect prompt injection
 function sanitize(text: string | null | undefined, maxLen = 300): string {
   if (!text) return "";
   return text.replace(/[\r\n\t]/g, " ").slice(0, maxLen);
@@ -11,8 +10,6 @@ function sanitize(text: string | null | undefined, maxLen = 300): string {
 function buildProfileContext(state: VibeprintState): string {
   const parts: string[] = [];
 
-  // SEC-003: Profile data is serialized as JSON to prevent prompt injection.
-  // Untrusted fields (bio, repo descriptions) are sanitized and delimited.
   if (state.profile) {
     const { x, github } = state.profile;
     const profileData = {
