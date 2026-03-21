@@ -42,7 +42,7 @@ export async function generateCalendarTool(input: GenerateCalendarInput) {
 // ─── save_calendar ────────────────────────────────────────────────────────
 
 export const saveCalendarSchema = z.object({
-  json: z.string().describe("The calendar JSON array returned by the LLM"),
+  json: z.string().min(2).max(500_000).describe("The calendar JSON array returned by the LLM"),
 });
 
 export async function saveCalendarTool(input: { json: string }) {

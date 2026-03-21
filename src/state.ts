@@ -16,7 +16,8 @@ const EMPTY_STATE: VibeprintState = {
 
 function ensureDir(): void {
   if (!existsSync(STATE_DIR)) {
-    mkdirSync(STATE_DIR, { recursive: true });
+    // SEC-005: Create with restrictive permissions
+    mkdirSync(STATE_DIR, { recursive: true, mode: 0o700 });
   }
 }
 
@@ -33,7 +34,8 @@ export function loadState(): VibeprintState {
 
 export function saveState(state: VibeprintState): void {
   ensureDir();
-  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), "utf-8");
+  // SEC-005: Write with restrictive permissions
+  writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), { encoding: "utf-8", mode: 0o600 });
 }
 
 export function updateState(patch: Partial<VibeprintState>): VibeprintState {

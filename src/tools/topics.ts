@@ -27,7 +27,7 @@ export async function generateTopicsTool(_input: Record<string, never>) {
 // ─── save_topics ─────────────────────────────────────────────────────────
 
 export const saveTopicsSchema = z.object({
-  json: z.string().describe("The topics JSON array returned by the LLM"),
+  json: z.string().min(2).max(500_000).describe("The topics JSON array returned by the LLM"),
 });
 
 export async function saveTopicsTool(input: { json: string }) {
