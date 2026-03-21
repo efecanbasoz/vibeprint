@@ -4,8 +4,6 @@ import { join } from "path";
 import type { VibeprintState } from "./types.js";
 import { vibeprintStateSchema } from "./schemas.js";
 
-// QA-006: Fully async fs operations — no event loop blocking
-
 const STATE_DIR = join(homedir(), ".vibeprint");
 const STATE_FILE = join(STATE_DIR, "state.json");
 
