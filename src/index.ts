@@ -99,7 +99,6 @@ server.tool(
   saveCalendarTool
 );
 
-// SEC-007: Tools with side effects use registerTool with proper annotations
 server.registerTool(
   "export",
   {
