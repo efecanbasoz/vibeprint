@@ -54,6 +54,14 @@ function toMarkdown(entries: CalendarEntry[]): string {
   return lines.join("\n");
 }
 
+// SEC-004: Sanitize CSV fields to prevent formula injection
+function csvSafe(value: string): string {
+  const escaped = value.replace(/"/g, '""');
+  // Prefix formula-capable characters with a single quote
+  const sanitized = /^[=+\-@\t\r]/.test(escaped) ? `'${escaped}` : escaped;
+  return `"${sanitized}"`;
+}
+
 function toCsv(entries: CalendarEntry[]): string {
   const header = "date,time,day,format,pillar,tweet_number,char_count,text,notes";
   const rows: string[] = [header];
@@ -63,10 +71,10 @@ function toCsv(entries: CalendarEntry[]): string {
     for (let i = 0; i < e.copy.tweets.length; i++) {
       const tweet = e.copy.tweets[i];
       const charCount = e.copy.charCounts[i] ?? tweet.text.length;
-      const text = `"${tweet.text.replace(/"/g, '""')}"`;
-      const notes = i === 0 ? `"${(e.copy.notes ?? "").replace(/"/g, '""')}"` : '""';
+      const text = csvSafe(tweet.text);
+      const notes = i === 0 ? csvSafe(e.copy.notes ?? "") : '""';
       rows.push(
-        [e.date, e.time, day, e.format, e.pillar, tweet.number, charCount, text, notes].join(",")
+        [e.date, e.time, day, csvSafe(e.format), csvSafe(e.pillar), tweet.number, charCount, text, notes].join(",")
       );
     }
   }
@@ -95,8 +103,14 @@ export async function exportTool(input: ExportInput) {
     }
 
     const filename = `calendar.${input.format}`;
-    const outputPath = resolve(input.output_path ?? join(STATE_DIR, filename));
-    writeFileSync(outputPath, content, "utf-8");
+    // SEC-001: Confine exports to STATE_DIR to prevent arbitrary file overwrites
+    const defaultPath = join(STATE_DIR, filename);
+    const outputPath = resolve(input.output_path ?? defaultPath);
+    const realBase = resolve(STATE_DIR);
+    if (!outputPath.startsWith(realBase + "/")) {
+      return err("Export path must be within ~/.vibeprint/ directory.");
+    }
+    writeFileSync(outputPath, content, { encoding: "utf-8", mode: 0o600 });
 
     return ok(
       `✅ Calendar exported.\n\n` +
@@ -108,6 +122,7 @@ export async function exportTool(input: ExportInput) {
         `${input.format === "json" ? "Machine-readable — use for integrations or scheduling tools." : ""}`
     );
   } catch (e) {
-    return err(String(e));
+    console.error("export failed:", e);
+    return err("Export failed. Check file permissions and path.");
   }
 }

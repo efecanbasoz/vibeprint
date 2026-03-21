@@ -32,7 +32,7 @@ export async function generateRoadmapTool(_input: Record<string, never>) {
 // ─── save_roadmap ─────────────────────────────────────────────────────────
 
 export const saveRoadmapSchema = z.object({
-  json: z.string().describe("The roadmap JSON string returned by the LLM"),
+  json: z.string().min(2).max(500_000).describe("The roadmap JSON string returned by the LLM"),
 });
 
 export type SaveRoadmapInput = z.infer<typeof saveRoadmapSchema>;
