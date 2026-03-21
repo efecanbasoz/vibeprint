@@ -129,4 +129,4 @@ Without these, vibeprint still works — GitHub public API is available unauthen
 
 ## License
 
-MIT
+Apache 2.0
