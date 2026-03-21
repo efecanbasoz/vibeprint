@@ -99,10 +99,15 @@ server.tool(
   saveCalendarTool
 );
 
-server.tool(
+// SEC-007: Tools with side effects use registerTool with proper annotations
+server.registerTool(
   "export",
-  "Export the content calendar to a file. Formats: md (markdown), json, csv.",
-  exportSchema.shape,
+  {
+    title: "Export Calendar",
+    description: "Export the content calendar to a file. Formats: md (markdown), json, csv.",
+    annotations: { readOnlyHint: false, destructiveHint: false, openWorldHint: false },
+    inputSchema: exportSchema.shape,
+  },
   exportTool
 );
 
@@ -113,10 +118,14 @@ server.tool(
   statusTool
 );
 
-server.tool(
+server.registerTool(
   "reset",
-  "Reset all vibeprint state. Requires confirm: true.",
-  resetSchema.shape,
+  {
+    title: "Reset State",
+    description: "Reset all vibeprint state. Requires confirm: true.",
+    annotations: { readOnlyHint: false, destructiveHint: true, openWorldHint: false },
+    inputSchema: resetSchema.shape,
+  },
   resetTool
 );
 
