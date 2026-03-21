@@ -61,7 +61,7 @@ Then add to your `~/.claude/claude_desktop_config.json` (or Claude Code config):
 
 ```
 // Start a new session
-discover_profile(x_handle: "efecanbasoz", github_username: "efecanbasoz")
+discover_profile(x_handle: "PROFILE_NAME", github_username: "USER_NAME")
 
 // Define your niche
 set_niche(
