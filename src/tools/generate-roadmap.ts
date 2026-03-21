@@ -2,7 +2,7 @@ import { z } from "zod";
 import { loadState, updateState } from "../state.js";
 import { buildRoadmapPrompt } from "../prompts.js";
 import { ok, err } from "../types.js";
-import type { Roadmap } from "../types.js";
+import { roadmapSchema, stripFence } from "../schemas.js";
 
 export const generateRoadmapSchema = z.object({});
 
@@ -39,9 +39,14 @@ export type SaveRoadmapInput = z.infer<typeof saveRoadmapSchema>;
 
 export async function saveRoadmapTool(input: SaveRoadmapInput) {
   try {
-    const raw = input.json.trim().replace(/^```json\n?/, "").replace(/\n?```$/, "");
-    const roadmap = JSON.parse(raw) as Roadmap;
-    roadmap.generatedAt = new Date().toISOString();
+    const raw = stripFence(input.json);
+    const parsed = JSON.parse(raw);
+    // SEC-002: Validate LLM output with Zod before persisting
+    const result = roadmapSchema.safeParse(parsed);
+    if (!result.success) {
+      return err(`Invalid roadmap structure: ${result.error.issues.map(i => i.message).join(', ')}`);
+    }
+    const roadmap = { ...result.data, generatedAt: new Date().toISOString() };
     updateState({ roadmap });
 
     const pillars = roadmap.contentPillars
