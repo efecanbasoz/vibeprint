@@ -3,7 +3,25 @@ import { updateState } from "../state.js";
 import { ok, err } from "../types.js";
 import type { GitHubProfile, GitHubRepo, XProfile, UserProfile } from "../types.js";
 
+const FETCH_TIMEOUT_MS = 15_000;
+
 // ─── GitHub ────────────────────────────────────────────────────────────────
+
+function checkRateLimit(res: Response): void {
+  if (res.status === 403 || res.status === 429) {
+    const remaining = res.headers.get("x-ratelimit-remaining");
+    if (remaining === "0") {
+      const resetEpoch = res.headers.get("x-ratelimit-reset");
+      const resetDate = resetEpoch
+        ? new Date(parseInt(resetEpoch) * 1000).toISOString()
+        : "unknown";
+      throw new Error(
+        `GitHub API rate limit exceeded. Resets at ${resetDate}. ` +
+          `Set GITHUB_TOKEN env var for higher limits (5,000 req/hr).`
+      );
+    }
+  }
+}
 
 async function fetchGitHubProfile(username: string): Promise<GitHubProfile> {
   const headers: Record<string, string> = {
@@ -13,7 +31,12 @@ async function fetchGitHubProfile(username: string): Promise<GitHubProfile> {
   const token = process.env.GITHUB_TOKEN;
   if (token) headers["Authorization"] = `Bearer ${token}`;
 
-  const userRes = await fetch(`https://api.github.com/users/${username}`, { headers });
+  const userRes = await fetch(`https://api.github.com/users/${username}`, {
+    headers,
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+  });
+
+  checkRateLimit(userRes);
   if (!userRes.ok) throw new Error(`GitHub user not found: ${username} (${userRes.status})`);
   const user = (await userRes.json()) as {
     name: string | null;
@@ -22,8 +45,10 @@ async function fetchGitHubProfile(username: string): Promise<GitHubProfile> {
 
   const repoRes = await fetch(
     `https://api.github.com/users/${username}/repos?per_page=30&sort=updated`,
-    { headers }
+    { headers, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) }
   );
+
+  checkRateLimit(repoRes);
   if (!repoRes.ok) throw new Error(`Failed to fetch repos for ${username}`);
   const rawRepos = (await repoRes.json()) as Array<{
     name: string;
@@ -68,7 +93,10 @@ async function fetchXProfile(handle: string): Promise<XProfile> {
     const cleanHandle = handle.replace("@", "");
     const res = await fetch(
       `https://api.twitter.com/2/users/by/username/${cleanHandle}?user.fields=description,public_metrics,name`,
-      { headers: { Authorization: `Bearer ${bearer}` } }
+      {
+        headers: { Authorization: `Bearer ${bearer}` },
+        signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+      }
     );
     if (res.ok) {
       const data = (await res.json()) as {
@@ -91,8 +119,6 @@ async function fetchXProfile(handle: string): Promise<XProfile> {
     }
   }
 
-  // Fallback: return a stub that the LLM can work with
-  // (X API requires OAuth — without a token we store what the user told us)
   return {
     handle: handle.replace("@", ""),
     name: handle.replace("@", ""),
@@ -128,7 +154,6 @@ export async function discoverProfileTool(input: DiscoverProfileInput) {
   try {
     const xProfile = await fetchXProfile(input.x_handle);
 
-    // Allow the user to override the bio manually (no token needed)
     if (input.x_bio_override) {
       xProfile.bio = input.x_bio_override;
       xProfile.source = "manual";

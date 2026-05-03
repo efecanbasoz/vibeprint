@@ -3,6 +3,7 @@ dist/
 *.js.map
 .env
 .DS_Store
+*.log
 
 # Codex scan results
 security-scan-results.md
