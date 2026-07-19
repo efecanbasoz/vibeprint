@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { z } from "zod";
+import { buildRoadmapPrompt } from "../src/prompts.js";
 import { stripFence, roadmapSchema, contentTopicSchema, calendarEntrySchema } from "../src/schemas.js";
 import { ok, err } from "../src/types.js";
 
@@ -32,6 +33,35 @@ describe("stripFence", () => {
 
   it("removes only first and last fence, preserving inner backticks", () => {
     expect(stripFence('```json\n{"code":"```"}\n```')).toBe('{"code":"```"}');
+  });
+});
+
+// ─── prompt context ──────────────────────────────────────────────────────
+
+describe("prompt context", () => {
+  it("includes bounded public X source notes", () => {
+    const prompt = buildRoadmapPrompt({
+      profile: {
+        x: {
+          handle: "janedoe",
+          name: "Jane Doe",
+          bio: "Builds developer tools",
+          followersCount: 2400,
+          source: "manual",
+          sourceNotes:
+            "Collection window: last 30 days. Public post URLs show launch notes, issue triage, and reply themes around TypeScript tooling.",
+        },
+        github: null,
+        discoveredAt: "2026-06-12T03:46:08.049Z",
+      },
+      niche: null,
+      roadmap: null,
+      topics: [],
+      calendar: [],
+    });
+
+    expect(prompt).toContain("publicSourceNotes");
+    expect(prompt).toContain("reply themes around TypeScript tooling");
   });
 });
 

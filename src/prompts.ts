@@ -13,7 +13,13 @@ function buildProfileContext(state: VibeprintState): string {
   if (state.profile) {
     const { x, github } = state.profile;
     const profileData = {
-      x: { handle: x.handle, name: sanitize(x.name), bio: sanitize(x.bio, 500), followers: x.followersCount },
+      x: {
+        handle: x.handle,
+        name: sanitize(x.name),
+        bio: sanitize(x.bio, 500),
+        followers: x.followersCount,
+        publicSourceNotes: x.sourceNotes ? sanitize(x.sourceNotes, 2_000) : undefined,
+      },
       github: github ? {
         username: github.username,
         bio: sanitize(github.bio, 500),

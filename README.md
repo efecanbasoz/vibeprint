@@ -3,7 +3,7 @@
 </p>
 
 [![license](https://img.shields.io/badge/license-Apache--2.0-blue?style=flat-square)](./LICENSE)
-[![node](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)](https://nodejs.org)
+[![node](https://img.shields.io/badge/node-%3E%3D20-brightgreen?style=flat-square)](https://nodejs.org)
 [![MCP](https://img.shields.io/badge/MCP-compatible-8A2BE2?style=flat-square)](https://modelcontextprotocol.io)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5+-3178c6?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 
@@ -155,6 +155,27 @@ Repos found: 8
 Next step: Run set_niche to define your niche and audience.
 ```
 
+For richer X/Twitter context, collect a compact public evidence packet and pass
+it as `x_source_notes`:
+
+```
+> discover_profile(
+    x_handle: "janedoe",
+    github_username: "janedoe",
+    x_source_notes: "Collection window: last 30 days. Public post URLs show launch notes, issue triage, recurring reply themes, and media context."
+  )
+```
+
+You can collect those notes manually or with an OpenClaw plugin such as
+[TweetClaw](https://github.com/Xquik-dev/tweetclaw). Keep the field limited to
+public post URLs, themes, reply context, media context, collection windows, and
+why each source matters. Do not paste cookies, bearer tokens, private DMs, raw
+session data, or account credentials.
+
+vibeprint uses `x_source_notes` only as profile context for roadmap, topic, and
+calendar prompts. It does not post, schedule, reply, send DMs, or trigger
+external account actions from this field.
+
 ### 2. Set your niche
 
 ```
@@ -285,7 +306,7 @@ See [`.env.example`](./.env.example) for a template.
 ## Stack
 
 - **TypeScript 5.5+** — Strict mode, ES2022 target
-- **Node.js >= 18** — Uses native `fetch`, no polyfills needed
+- **Node.js >= 20** — Matches the package engine requirement
 - **`@modelcontextprotocol/sdk`** — Official MCP SDK by Anthropic
 - **`zod`** — Runtime schema validation for all tool inputs and LLM outputs
 - **State** — Flat JSON file in `~/.vibeprint/` — no database, no cloud dependency

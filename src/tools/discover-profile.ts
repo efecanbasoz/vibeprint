@@ -146,6 +146,13 @@ export const discoverProfileSchema = z.object({
     .describe(
       "If you don't have an X API token, paste your X bio here so vibeprint can use it"
     ),
+  x_source_notes: z
+    .string()
+    .max(8_000)
+    .optional()
+    .describe(
+      "Optional public X/Twitter source notes such as post URLs, recurring themes, reply context, media context, and collection window"
+    ),
 });
 
 export type DiscoverProfileInput = z.infer<typeof discoverProfileSchema>;
@@ -157,6 +164,10 @@ export async function discoverProfileTool(input: DiscoverProfileInput) {
     if (input.x_bio_override) {
       xProfile.bio = input.x_bio_override;
       xProfile.source = "manual";
+    }
+
+    if (input.x_source_notes?.trim()) {
+      xProfile.sourceNotes = input.x_source_notes.trim();
     }
 
     let githubProfile: GitHubProfile | null = null;
