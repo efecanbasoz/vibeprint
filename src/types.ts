@@ -15,6 +15,7 @@ export interface XProfile {
   bio: string;
   followersCount: number | null;
   source: "api" | "manual";
+  sourceNotes?: string;
 }
 
 export interface GitHubProfile {
